@@ -49,8 +49,8 @@ abstract class Repository
             }
 
             $key = mb_substr($method, 4);
-            if (in_array($method = 'warmup' . $key, $methods)) {
-                $this->$method();
+            if (in_array($warmup = 'warmup' . $key, $methods)) {
+                $this->$warmup();
                 continue;
             }
 
