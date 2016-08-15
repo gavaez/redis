@@ -126,6 +126,30 @@ abstract class Repository
     }
 
     /**
+     * @param mixed $arg
+     *
+     * @return string
+     */
+    abstract protected function getKeyPart($arg);
+
+    /**
+     * @param string $key
+     * @param array  $arguments
+     *
+     * @return string
+     */
+    protected function getKeyName($key, array $arguments = [])
+    {
+        $key = static::KEY_PREFIX . ':' . $key;
+
+        if ($arguments) {
+            $key .= ':' . md5(serialize(array_map([$this, 'getKeyPart'], $arguments)));
+        }
+
+        return $key;
+    }
+
+    /**
      * @param string $key
      *
      * @return string
@@ -140,37 +164,6 @@ abstract class Repository
         }
 
         return $method;
-    }
-
-    /**
-     * @param string $key
-     * @param array  $arguments
-     *
-     * @return string
-     */
-    protected function getKeyName($key, array $arguments = [])
-    {
-        $key = static::KEY_PREFIX . ':' . $key;
-
-        if (!$arguments) {
-            return $key;
-        }
-
-        array_walk($arguments, function (&$arg) {
-            if (gettype($arg) === 'boolean') {
-                $arg = (int) $arg;
-            } elseif (is_object($arg)) {
-                $arg = @$arg->getId();
-                if (!$arg) {
-                    $arg = get_class($arg);
-                }
-            }
-            $arg = (string) $arg;
-        });
-
-        $key .= ':' . md5(serialize($arguments));
-
-        return $key;
     }
 
     /**
