@@ -2,7 +2,7 @@
     "name": "gavaez/redis",
     "type": "library",
     "description": "Redis client",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "keywords": ["redis"],
     "license": "MIT",
     "authors": [

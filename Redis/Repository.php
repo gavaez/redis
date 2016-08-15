@@ -152,12 +152,23 @@ abstract class Repository
     {
         $key = static::KEY_PREFIX . ':' . $key;
 
-        if ($arguments) {
-            $arguments = array_map(function($arg) {
-                return (string) (is_object($arg) && method_exists($arg, 'getId') ? $arg->getId() : $arg);
-            }, $arguments);
-            $key .= ':' . md5(serialize($arguments));
+        if (!$arguments) {
+            return $key;
         }
+
+        array_walk($arguments, function (&$arg) {
+            if (gettype($arg) === 'boolean') {
+                $arg = (int) $arg;
+            } elseif (is_object($arg)) {
+                $arg = @$arg->getId();
+                if (!$arg) {
+                    $arg = get_class($arg);
+                }
+            }
+            $arg = (string) $arg;
+        });
+
+        $key .= ':' . md5(serialize($arguments));
 
         return $key;
     }
