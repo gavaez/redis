@@ -38,7 +38,7 @@ class Client extends \Redis
      *
      * @param string $key
      * @param string $value
-     * @param int    $expire
+     * @param int    $expire [optional]
      *
      * @return bool
      * @throws ClientException
@@ -52,12 +52,19 @@ class Client extends \Redis
         return $this->setex($key, $expire, $value);
     }
 
-    public function getStored($key, callable $callback = null)
+    /**
+     * @param string   $key
+     * @param callable $callback [optional]
+     * @param int      $expire   [optional]
+     *
+     * @return null|bool|string
+     */
+    public function getStored($key, callable $callback = null, $expire = self::DEFAULT_EXPIRE)
     {
         $value = $this->get($key);
 
         if ($value === false) {
-            $this->set($key, $value = is_callable($callback) ? $callback($key) : null);
+            $this->set($key, $value = is_callable($callback) ? $callback($key) : null, $expire);
         }
 
         return $value;
