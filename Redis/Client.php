@@ -11,20 +11,21 @@ use Redis\Exception\LockAcquireTimeoutException;
  */
 class Client extends \Redis
 {
-    const DEFAULT_EXPIRE = 14400; // 4 hours
+    const DEFAULT_EXPIRE = 14400;   // 4 hours
     const MAX_EXPIRE     = 2678400; // 31 days
 
     /**
      * @param string $host
-     * @param int    $port    [optional]
-     * @param int    $timeout [optional]
+     * @param int    $port          [optional]
+     * @param int    $timeout       [optional]
+     * @param int    $retryInterval [optional]
      *
      * @return bool
      * @throws ConnectException
      */
-    public function connect($host, $port = 6379, $timeout = 0)
+    public function connect($host, $port = 6379, $timeout = 0, $retryInterval = 0)
     {
-        $success = parent::connect($host, $port, $timeout);
+        $success = parent::connect($host, $port, $timeout, $retryInterval);
         if (!$success) {
             throw new ConnectException($host, $port);
         }
@@ -35,20 +36,31 @@ class Client extends \Redis
     /**
      * @see setex
      *
-     * @param string $name
+     * @param string $key
      * @param string $value
      * @param int    $expire
      *
      * @return bool
      * @throws ClientException
      */
-    public function set($name, $value, $expire = self::DEFAULT_EXPIRE)
+    public function set($key, $value, $expire = self::DEFAULT_EXPIRE)
     {
         if (self::MAX_EXPIRE < $expire) {
             throw new ClientException(sprintf('You can specify expire period not more %u seconds', self::MAX_EXPIRE));
         }
 
-        return $this->setex($name, $expire, $value);
+        return $this->setex($key, $expire, $value);
+    }
+
+    public function getStored($key, callable $callback = null)
+    {
+        $value = $this->get($key);
+
+        if ($value === false) {
+            $this->set($key, $value = is_callable($callback) ? $callback($key) : null);
+        }
+
+        return $value;
     }
 
     /**
