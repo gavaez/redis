@@ -7,8 +7,6 @@ namespace Redis\Exception;
  */
 class LockAcquireTimeoutException extends ClientException
 {
-    /** @noinspection PhpDocSignatureInspection */
-
     /**
      * @param int        $timeout
      * @param int        $code     [optional]
@@ -17,14 +15,9 @@ class LockAcquireTimeoutException extends ClientException
      * @param int        $lineno   [optional]
      * @param \Exception $previous [optional]
      */
-    public function __construct(
-        $timeout,
-        $code = 0,
-        $severity = 1,
-        $filename = __FILE__,
-        $lineno = __LINE__,
-        \Exception $previous = null
-    ) {
+    public function __construct
+        ($timeout, $code = 0, $severity = 1, $filename = __FILE__, $lineno = __LINE__, \Exception $previous = null)
+    {
         parent::__construct(
             sprintf('Lock failed: more than %u seconds', $timeout),
             $code,

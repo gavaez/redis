@@ -44,11 +44,11 @@ abstract class Repository
         $methods = get_class_methods($this);
 
         foreach ($methods as $method) {
-            if (mb_substr($method, 0, 4) !== 'calc') {
+            if (!preg_match('#^calc(\w+)$#', $method, $matches)) {
                 continue;
             }
 
-            $key = mb_substr($method, 4);
+            list(, $key) = $matches;
             if (in_array($warmup = 'warmup' . $key, $methods)) {
                 $this->$warmup();
                 continue;
@@ -157,8 +157,8 @@ abstract class Repository
      */
     protected function getCalcMethod($key)
     {
-        if (!in_array($method = 'calc' . $key, get_class_methods($this))) {
-            throw new \ErrorException (
+        if (method_exists($this, $method = 'calc' . $key)) {
+            throw new \ErrorException(
                 "Не создан метод '$method' для генерации кэша. Возможно допущена ошибка в названии ключа."
             );
         }
@@ -168,15 +168,16 @@ abstract class Repository
 
     /**
      * @param string $key
-     * @param array  $arguments
+     * @param array  $arguments [optional]
      *
-     * @return mixed
-     * @throws \ErrorException
+     * @return bool|null|string
      */
     protected function get($key, array $arguments = [])
     {
-        $ret = $this->redis->get($this->getKeyName($key, $arguments));
+        $this->getCalcMethod($key);
 
-        return $ret === false ? $this->regenerate($key, $arguments) : $ret;
+        return $this->redis->getStored(
+            $this->getKeyName($key, $arguments), [$this, 'regenerate'], Client::DEFAULT_EXPIRE, [$key, $arguments]
+        );
     }
 }

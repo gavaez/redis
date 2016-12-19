@@ -56,10 +56,11 @@ class Client extends \Redis
      * @param string   $key
      * @param callable $callback [optional]
      * @param int      $expire   [optional]
+     * @param array    $args     [optional]
      *
-     * @return null|bool|string
+     * @return bool|null|string
      */
-    public function getStored($key, callable $callback = null, $expire = self::DEFAULT_EXPIRE)
+    public function getStored($key, callable $callback = null, $expire = self::DEFAULT_EXPIRE, array $args = [])
     {
         $value = $this->get($key);
 
@@ -73,8 +74,6 @@ class Client extends \Redis
     /**
      * @param int    $dbindex [optional]
      * @param string $prefix  [optional]
-     *
-     * @throws ClientException
      */
     public function initNs($dbindex = null, $prefix = null)
     {
@@ -132,8 +131,7 @@ class Client extends \Redis
     {
         $limit = time() + $timeout;
 
-        while (time() < $limit)
-        {
+        while (time() < $limit) {
             if ($this->setnx($key, time() + $expire)) {
                 $this->expire($key, $expire);
                 return true;
@@ -152,6 +150,7 @@ class Client extends \Redis
      */
     public function releaseLock($key)
     {
+        /** @noinspection PhpVoidFunctionResultUsedInspection */
         return (bool) $this->delete($key);
     }
 }
