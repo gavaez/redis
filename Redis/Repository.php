@@ -157,7 +157,7 @@ abstract class Repository
      */
     protected function getCalcMethod($key)
     {
-        if (method_exists($this, $method = 'calc' . $key)) {
+        if (!method_exists($this, $method = 'calc' . $key)) {
             throw new \ErrorException(
                 "Не создан метод '$method' для генерации кэша. Возможно допущена ошибка в названии ключа."
             );
