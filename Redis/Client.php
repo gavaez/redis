@@ -65,7 +65,7 @@ class Client extends \Redis
         $value = $this->get($key);
 
         if ($value === false) {
-            $this->set($key, $value = is_callable($callback) ? $callback($key) : null, $expire);
+            $this->set($key, $value = is_callable($callback) ? $callback($args) : null, $expire);
         }
 
         return $value;
